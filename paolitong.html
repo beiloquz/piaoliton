@@ -254,7 +254,10 @@
     </div>
 
     <script>
-        // 移除硬编码密钥，改为从本地存储读取
+        // ================= 核心修改1：新增CORS代理地址 =================
+        const CORS_PROXY = 'https://corsproxy.io/?';
+        // ================= 核心修改结束 =================
+
         const TOKEN_CACHE_KEY = 'baidu_ocr_token_cache';
         const KEYS_STORAGE_KEY = 'piaolitong_api_keys';
         const REQUEST_TIMEOUT = 10000;
@@ -436,12 +439,15 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
             try {
-                const res = await fetch(`https://aip.baidubce.com/oauth/2.0/token`, {
+                // ================= 核心修改2：Token请求通过CORS代理 =================
+                const res = await fetch(`${CORS_PROXY}https://aip.baidubce.com/oauth/2.0/token`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `grant_type=client_credentials&client_id=${keys.apiKey}&client_secret=${keys.secretKey}`,
                     signal: controller.signal
                 });
+                // ================= 核心修改结束 =================
+
                 clearTimeout(timeoutId);
                 const data = await res.json();
                 
@@ -543,12 +549,15 @@
             const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
             
             try {
-                const res = await fetch(`https://aip.baidubce.com/rest/2.0/ocr/v1/vat_invoice?access_token=${accessToken}`, {
+                // ================= 核心修改3：OCR识别请求通过CORS代理 =================
+                const res = await fetch(`${CORS_PROXY}https://aip.baidubce.com/rest/2.0/ocr/v1/vat_invoice?access_token=${accessToken}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `image=${encodeURIComponent(base64Data)}`,
                     signal: controller.signal
                 });
+                // ================= 核心修改结束 =================
+
                 clearTimeout(timeoutId);
                 const data = await res.json();
                 
